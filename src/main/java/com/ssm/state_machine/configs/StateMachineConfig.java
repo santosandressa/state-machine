@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
+import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 
 import java.util.EnumSet;
 
@@ -21,5 +22,19 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<OrderS
                 .states(EnumSet.allOf(OrderStates.class))
                 .end(OrderStates.COMPLETED)
                 .end(OrderStates.CANCELED);
+    }
+
+    @Override
+    public void configure(StateMachineTransitionConfigurer<OrderStates, OrderEvents> transitions) throws Exception {
+        transitions
+                .withExternal().source(OrderStates.NEW).target(OrderStates.VALIDATED).event(OrderEvents.VALIDATE)
+                .and()
+                .withExternal().source(OrderStates.VALIDATED).target(OrderStates.PAID).event(OrderEvents.PAY)
+                .and()
+                .withExternal().source(OrderStates.PAID).target(OrderStates.SHIPPED).event(OrderEvents.SHIP)
+                .and()
+                .withExternal().source(OrderStates.SHIPPED).target(OrderStates.COMPLETED).event(OrderEvents.COMPLETE)
+                .and()
+                .withExternal().source(OrderStates.VALIDATED).target(OrderStates.CANCELED).event(OrderEvents.CANCEL);
     }
 }
